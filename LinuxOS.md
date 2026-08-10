@@ -1,5 +1,4 @@
 1. What If There Were No Operating System?Imagine a computer without an operating system. Identify the problems a user would face and investigate how OS features solve them. Demonstrate at least three features using Linux and present a *“Without OS vs With OS”* comparison.  
-
 OS is an interface between the systems software and hardware.
 It performs multiple functionalities such as-
 *Manages the CPU, Memory and the files 
@@ -10,6 +9,7 @@ CPU Management- There would no system to decide which program would get the CPU 
 Memory Management-Programs would directly have to manage the computer's memory which would lead to issues between different programs and inefficient usage of RAM.The OS manages the main memory and alloctes memory to programs when they need it and releases it when its not required.
 File Management- The user needs to directly interact with the storage device and have to create,access,modify and delete files by themselves.OS provides a file system that allows used to easily create,access,modify and delete files.
 User Hardware interaction-The user would not be having any interface to communicate with the hardware. All the applications will have to communicate with the hardware directly. The OS will act as an intermediate and the user does not have to directly interact with the hardware.
+
 |Functions           | Without OS                                                                  | With OS                                                                |
 |--------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------|
 |CPU Management      | Programs would have to manage the CPU by itself                             | Linux manages processes and allocates the CPU time                     |
