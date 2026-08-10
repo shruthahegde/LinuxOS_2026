@@ -10,6 +10,8 @@ Memory Management-Programs would directly have to manage the computer's memory w
 File Management- The user needs to directly interact with the storage device and have to create,access,modify and delete files by themselves.OS provides a file system that allows used to easily create,access,modify and delete files.
 User Hardware interaction-The user would not be having any interface to communicate with the hardware. All the applications will have to communicate with the hardware directly. The OS will act as an intermediate and the user does not have to directly interact with the hardware.
 
+The following are 3 features that can be demonstrated using linux-
+
 |Functions           | Without OS                                                                  | With OS                                                                |
 |--------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------|
 |CPU Management      | Programs would have to manage the CPU by itself                             | Linux manages processes and allocates the CPU time                     |
