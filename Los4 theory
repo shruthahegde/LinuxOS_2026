@@ -1,0 +1,237 @@
+Hard link vs. soft link
+
+
+Part A - Create the links
+Create a directory named link_lab and navigate to it.
+mkdir link_lab
+cd link_lab
+pwd
+
+Create a file named security.txt containing the following text:
+cat > security.txt
+Linux File System Security Lab Confidential Security Report
+Create:
+a hard link named security_hard.txt
+ln security.txt security_hard.txt
+
+a symbolic link named security_soft.txt
+ln -s security.txt security_soft.txt
+
+List all three files using a command that displays their inode numbers.
+ls -li
+
+Record the inode numbers of:
+security.txt: 1710576
+security_hard.txt: 1710576
+security_soft.txt: 1710577
+What difference do you observe?
+security.txt and security_hard.txt have the same inode number, while security_soft.txt has a different inode number. This is because a hard link refers to the same inode as the original file, whereas a symbolic link is a separate file containing the target pathname.
+ 
+Part B - Examine File Metadata
+
+Use ls -l to examine the three files. Identify the file type of each file from the first character of the permission field.
+
+ls -l 
+security.txt: Regular file
+security_hard.txt: Regular file security_soft.txt: Symbolic link
+
+Compare the link count of the original file, hard link, and symbolic link. Explain the observed values.
+ls -li
+
+security.txt: link count 2
+security_hard.txt: link count 2 security_soft.txt: link count 1
+security.txt and security_hard.txt are two directory entries referring to the same inode, so the inode's link count is 2. The symbolic link is a separate inode, so its own link count is 1.
+Use the stat command on all three files and record the information:
+stat security.txt
+stat security_hard.txt
+stat security_soft.txt 
+
+
+ 
+Parameter	Original	Hard Link	Soft Link
+Inode number	1710576	1710576	1710577
+File type	Regular file	Regular file	Symbolic link
+Size	60 bytes	60 bytes	12 bytes
+Link count	2	2	1
+Permissions	-rw-rw-r--	-rw-rw-r--	lrwxrwxrwx
+
+Compare the file sizes of the original file, hard link, and symbolic link. Why might the size of the symbolic link differ from the original file?
+The original file and hard link have the same file size because they refer to the same underlying inode and data. The symbolic link has a different, smaller size because it is a separate file that stores the pathname of the target, such as security.txt, rather than storing the actual file contents.
+
+
+Part C - Investigate readlink
+Execute readlink on security_soft.txt. What information is displayed?
+readlink security_soft.txt
+
+readlink displays the pathname stored inside the symbolic link. In this case, the symbolic link stores security.txt as its target.
+Execute readlink on security_hard.txt. What do you observe?
+readlink security_hard.txt
+
+No output is displayed because security_hard.txt is a hard link, not a symbolic link. A hard link does not store a target pathname, it directly refers to the same inode as the original file.
+Based on your observations, explain why readlink works differently for hard links and symbolic links.
+A symbolic link is a separate file that stores a pathname pointing to another file, so readlink can display that pathname. A hard link does not store a pathname to another file, it is another directory entry for the same inode. Therefore, readlink produces no output for a hard link.
+Use:
+readlink -f security_soft.txt
+
+What does the -f option reveal?
+The -f option resolves the symbolic link and displays the absolute path of the final target file.
+ 
+Part D - Content Modification
+Append the following line to security.txt:
+Unauthorized login detected
+echo “Unauthorized login detected” >> security.txt 
+
+Display the contents using all three filenames.
+cat security.txt
+cat security_hard.txt
+cat security_soft.txt
+
+Is the newly added content visible through both links? Explain why.
+Yes, the newly added content is visible through both the hard link and the symbolic link. The hard link and security.txt refer to the same inode, while the symbolic link points to security.txt. Therefore, both links access the updated file contents.
+Modify the file using security_hard.txt. Check the contents through security.txt and security_soft.txt. What do you observe?
+echo “Security investigation started” >>security_hard.txt
+cat security.txt
+cat security_soft.txt
+
+The modification is visible through both security.txt and security_soft.txt. This is because security_hard.txt and security.txt refer to the same inode, and security_soft.txt points to security.txt.
+ 
+Part E - Rename Experiment
+Rename security.txt to incident.txt
+mv security.txt incident.txt
+ls -li 
+
+Try accessing the content through security_hard.txt. Does it still work?
+ cat security_hard.txt
+
+Yes. The hard link still works after the original file is renamed because both incident.txt and security_hard.txt refer to the same inode.
+Try accessing the content through security_soft.txt. Does it still work?
+cat security_soft.txt
+No. The symbolic link does not work because it still points to security.txt, which no longer exists after the rename.
+Use readlink security_soft.txt after renaming the original file. What path is still stored in the symbolic link?
+readlink security_soft.txt
+
+The symbolic link still stores the pathname security.txt, even though the actual file has been renamed to incident.txt.
+Explain why renaming the original file affects the symbolic link differently from the hard link.
+Renaming the original file changes its directory name but does not change its inode. Therefore, the hard link continues to access the same inode and data. A symbolic link stores the target pathname rather than the inode. Since it still contains security.txt after the file was renamed to incident.txt, the symbolic link becomes broken.
+ 
+Part F - Deletion Experiment
+Recreate the links if necessary and then perform the following.
+rm security_soft.txt
+ln -s incident.txt security_soft.txt
+ls -li
+
+Delete the original file.
+rm incident.txt
+ls -li
+
+Check whether security_hard.txt can still be accessed.
+Yes, it can be accessed
+cat security_hard.txt 
+
+Check whether security_soft.txt can still be accessed.
+No, it cannot be accessed
+cat security_soft.txt 
+Use ls -l and readlink to investigate the symbolic link after deleting its target.
+ls -l
+readlink security_soft.txt 
+
+What is a dangling/broken symbolic link?
+A dangling or broken symbolic link is a symbolic link whose target file or directory no longer exists. The link remains, but it cannot access the target.
+Does deleting the original filename immediately delete the underlying data when a hard link exists? Justify your answer using the link count and inode.
+Before removing incident.txt
+
+ls -li 
+
+After removing incident.txt
+ls -li
+
+No. In our experiment, incident.txt and security_hard.txt initially had the same inode 1710576 and a link count of 2. After deleting incident.txt, security_hard.txt still had inode 1710576, but the link count decreased to 1. Therefore, the underlying data was not deleted because the hard link still referred to the inode.
+
+
+Part G - Directory and Filesystem Behaviour
+Create a directory named evidence. Attempt to create a hard link to this directory. Record the result.
+mkdir evidence
+ln evidence_hard 
+
+The operation failed because Linux generally does not allow users to create hard links to directories.
+Create a symbolic link named evidence_link pointing to the evidence directory. Was the operation successful?
+ln -s evidence_link
+ls -l 
+
+Yes, the operation was successful. A symbolic link can point to a directory.
+ 
+Based on your experiment, compare hard and symbolic links with respect to directory linking.
+Hard links to directories are generally not allowed because they could create directory cycles and complicate filesystem management. Symbolic links can point to directories because they simply store the target pathname.
+If multiple filesystems/mount points are available in the laboratory environment, attempt to create:
+df -T
+
+a hard link across filesystems
+echo “Cross filesystem test” > cross_test.txt
+ln cross_test.txt / media/sf_kali/cross_hard.txt
+
+a symbolic link across filesystems
+ln -s /home/kali/Desktop/cross_test.txt/media/sf_kali/cross_soft.txt
+
+A hard link attempt across the ext4 and vboxsf filesystems failed with “Invalid cross-device link.” A symbolic link attempt also failed with “Operation not permitted” because the VirtualBox shared-folder filesystem (vboxsf) in this environment does not permit the operation.
+
+
+Final Comparison
+Based only on your experimental observations, complete the following table:
+
+Parameter	Hard Link	Symbolic Link
+Inode number	Same as original file	Different from original file
+File type	Regular file (-)	Symbolic link (l)
+Link count	Increases link count of the same inode	Usually 1 for the symbolic-link inode
+File size	Same as original file	Size	of	the	stored	target pathname
+Stores target pathname?	No	Yes
+readlink output	No output	Displays target pathname
+Effect of modifying target	Changes are visible	Changes are visible
+Effect of renaming target	Still works	Becomes broken if pathname changes
+Effect of deleting target	Still works if another hard link exists	Becomes broken/dangling
+Can become a dangling or broken link?	No,	not	in	the	normal symbolic-link sense	Yes
+Directory linking	Not allowed in my experiment	Allowed
+Cross-filesystem linking	Failed: Invalid cross-device link	Failed	in	my	vboxsf environment with ‘Operation
+not permitted’
+ 
+sort
+Suppose alerts.txt contains:
+192.168.1.10 admin 5
+10.0.0.8 root 12
+172.16.0.5 guest 2
+10.0.0.20 admin 8 Format:
+IP-address  username  failed attempts
+
+cat > alerts.txt
+cat alerts.txt 
+Sort according to failed attempts
+sort -k3,3n alerts.txt
+Sort a list of suspicious IP addresses alphabetically.
+cut -d ‘ ‘ -f1 alerts.txt | sort
+Display only unique suspicious IP addresses using sort.
+cut -d ‘ ‘ -f1 alerts.txt | sort -u
+
+ 
+Sort a list of detected port numbers numerically.
+printf “443\n22\n8080\n80\n21\n” | sort -n
+
+Display port numbers in descending numerical order.
+printf “443\n22\n8080\n80\n21\n” | sort -nr
+Sort usernames without considering uppercase/lowercase differences.
+cut -d ‘ ‘ -f2 alerts.txt | sort -f
+From a failed-login log, count how many times each IP address occurs and display the most frequent IP first.
+cut -d ‘ ‘ -f1 alerts.txt | sort | uniq -c | sort -nr 
+Given IP,username,failed_attempts, sort records based on the number of failed attempts.
+Sort -k3,3n alerts.txt
+
+ 
+Sort a CSV vulnerability report based on severity score.
+Printf ‘V001,SQL Injection,9\nV002,XSS,6\nV003,Buffer Overflow,10\nV004,Weak Password,3\n” > vulnerability.csv
+cat vulnerability.csv
+sort -t ‘ ,’ -k3,3n vulnerability.csv 
+
+Extract IP addresses using grep, then use sort and uniq to identify unique IP addresses.
+grep -oE  ‘[0-9]+\.[0-9]+\.[0-9]=\.[0-9]+’ alerts.txt | sort | uniq
+
+Create a pipeline that displays the top 5 IP addresses responsible for the most failed login attempts.
+
+sort -k3,3nr alerts.txt | head -5 | cut -d ‘ ‘  -f1 
